@@ -1,11 +1,9 @@
 /**
  * API type detection helpers for APIXplorer.
  *
- * Phase 3 establishes the detection entry point and defaults to Unknown API
- * until real classification logic is implemented.
+ * Detection logic is intentionally deferred for now, so the extension uses a
+ * safe default while the live scan engine is being built.
  */
-
-import { parseUrl } from "./parser.js";
 
 const API_TYPES = {
   PRODUCT: "Product API",
@@ -23,24 +21,6 @@ const API_TYPES = {
 export function detectApiType(url) {
   if (!url) {
     return API_TYPES.UNKNOWN;
-  }
-
-  const { pathname } = parseUrl(url);
-
-  if (pathname.includes("/product")) {
-    return API_TYPES.PRODUCT;
-  }
-
-  if (pathname.includes("/search")) {
-    return API_TYPES.SEARCH;
-  }
-
-  if (pathname.includes("/cart")) {
-    return API_TYPES.CART;
-  }
-
-  if (pathname.includes("/offer")) {
-    return API_TYPES.OFFER;
   }
 
   return API_TYPES.UNKNOWN;

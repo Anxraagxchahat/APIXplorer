@@ -99,6 +99,11 @@ button:hover {
   border: 1px solid var(--border);
 }
 
+.danger-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  box-shadow: 0 10px 20px rgba(239, 68, 68, 0.22);
+}
+
 .info-panel {
   display: flex;
   flex-direction: column;
