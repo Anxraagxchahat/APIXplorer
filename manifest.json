@@ -3,18 +3,22 @@
   "name": "APIXplorer",
   "version": "1.0.0",
   "description": "A developer tool for discovering browser-visible web APIs.",
+
   "permissions": [
     "storage",
     "activeTab",
     "scripting"
   ],
+
   "host_permissions": [
     "<all_urls>"
   ],
+
   "background": {
     "service_worker": "background.js",
     "type": "module"
   },
+
   "action": {
     "default_popup": "popup.html",
     "default_title": "APIXplorer",
@@ -24,6 +28,7 @@
       "128": "icons/icon128.png"
     }
   },
+
   "content_scripts": [
     {
       "matches": [
@@ -32,9 +37,22 @@
       "js": [
         "content.js"
       ],
-      "type": "module"
+      "type": "module",
+      "run_at": "document_start"
     }
   ],
+
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "inject.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
