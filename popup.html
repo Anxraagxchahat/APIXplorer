@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>APIXplorer</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="popup-shell">
+      <section class="panel hero-panel">
+        <div class="brand-block">
+          <p class="eyebrow">Developer Toolkit</p>
+          <h1>APIXplorer</h1>
+          <p class="subtitle">Browser API Discovery Tool</p>
+        </div>
+
+        <div class="actions">
+          <button id="start-scan" class="primary-btn" type="button">Start Scan</button>
+          <button id="view-apis" class="secondary-btn" type="button">Saved APIs</button>
+        </div>
+      </section>
+
+      <section class="panel info-panel">
+        <div class="info-row">
+          <span class="label">Current Website</span>
+          <span id="current-domain" class="value">Loading...</span>
+        </div>
+
+        <div class="info-row">
+          <span class="label">Status</span>
+          <span id="status-text" class="value">Ready</span>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span>Version 1.0.0</span>
+      </footer>
+    </main>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>
