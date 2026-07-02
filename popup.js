@@ -1,4 +1,5 @@
 import { parseUrl } from "./core/parser.js";
+import { renderApiDashboard } from "./popup/components/api-list.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const domainElement = document.getElementById("current-domain");
@@ -6,6 +7,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const counterElement = document.getElementById("api-counter");
   const startButton = document.getElementById("start-scan");
   const savedApisButton = document.getElementById("view-apis");
+  const dashboardRoot = document.getElementById("dashboard-root");
 
   const updateStatus = (message) => {
     if (statusElement) {
@@ -49,6 +51,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   };
 
+  const refreshDashboard = async () => {
+    if (dashboardRoot) {
+      await renderApiDashboard(dashboardRoot, { onRefresh: refreshState });
+    }
+  };
+
   updateStatus("Ready");
   updateDomain("Loading...");
   updateCounter(0);
@@ -85,6 +93,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     updateStatus(state?.isScanning ? "Scanning" : "Ready");
     updateButtons(Boolean(state?.isScanning));
     updateCounter(state?.detectedCount ?? 0);
+    await refreshDashboard();
   });
 
   chrome.runtime.onMessage.addListener((message) => {
@@ -100,8 +109,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       updateButtons(false);
     } else if (message.event === "api_saved") {
       void refreshState();
+      void refreshDashboard();
     }
   });
 
+  savedApisButton?.addEventListener("click", () => {
+    void refreshDashboard();
+  });
+
   await refreshState();
+  await refreshDashboard();
 });
