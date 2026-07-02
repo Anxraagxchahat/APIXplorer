@@ -1,62 +1,96 @@
 /**
- * Request metadata collector for APIXplorer.
+ * APIXplorer
+ * Request Collector
  *
- * The collector accepts browser-visible request metadata from the content
- * script, normalizes it into internal API records, and saves only unique
- * records while emitting lifecycle events for the popup and background layer.
+ * Builds normalized request records,
+ * enriches them with intelligence,
+ * tracks metrics,
+ * prevents duplicate records.
  */
 
-import { detectApiType } from "./detector.js";
 import { parseUrl } from "./parser.js";
 import { saveApi, getApis } from "./storage.js";
-import { emitScannerEvent, incrementDetectedCount, isScannerRunning } from "./scanner.js";
+import {
+  emitScannerEvent,
+  incrementDetectedCount,
+  isScannerRunning,
+} from "./scanner.js";
+
+import { generateRequestId } from "./id.js";
+import { createMetrics, updateMetrics } from "./metrics.js";
+import { analyzeRequest } from "./request-analyzer.js";
 
 function normalizeUrl(url) {
   try {
-    const parsedUrl = new URL(url);
-    const search = parsedUrl.searchParams.toString();
-    return `${parsedUrl.protocol}//${parsedUrl.host}${parsedUrl.pathname}${search ? `?${search}` : ""}`;
+    const parsed = new URL(url);
+
+    return `${parsed.origin}${parsed.pathname}`;
   } catch {
     return url;
   }
 }
 
 function buildRecord(metadata) {
-  const parsedUrl = parseUrl(metadata.url);
-  const normalizedUrl = normalizeUrl(metadata.url);
-  const method = (metadata.method || "GET").toUpperCase();
+  const parsed = parseUrl(metadata.url);
 
-  return {
-    id: `${method}:${normalizedUrl}`,
-    method,
+  const record = {
+    id: generateRequestId(),
+
+    method: (metadata.method || "GET").toUpperCase(),
+
     url: metadata.url,
-    normalizedUrl,
-    hostname: parsedUrl.hostname,
-    pathname: parsedUrl.pathname,
-    queryParams: parsedUrl.queryParams,
-    apiType: detectApiType(metadata.url),
+
+    normalizedUrl: normalizeUrl(metadata.url),
+
+    hostname: parsed.hostname,
+
+    pathname: parsed.pathname,
+
+    queryParams: parsed.queryParams,
+
     source: metadata.type || "unknown",
-    timestamp: metadata.timestamp || Date.now(),
+
+    ...createMetrics(metadata.timestamp),
   };
+
+  return analyzeRequest(record);
 }
 
 export async function handleRequestMetadata(metadata) {
-  if (!metadata?.url || !isScannerRunning()) {
-    return null;
-  }
+  if (!metadata?.url) return null;
+
+  if (!isScannerRunning()) return null;
 
   const record = buildRecord(metadata);
-  const existingApis = await getApis();
-  const duplicate = existingApis.some((api) => api.method === record.method && api.normalizedUrl === record.normalizedUrl);
+
+  const existing = await getApis();
+
+  const duplicate = existing.find(
+    (api) =>
+      api.method === record.method &&
+      api.normalizedUrl === record.normalizedUrl
+  );
 
   emitScannerEvent("api_detected", record);
 
   if (duplicate) {
-    return null;
+    Object.assign(
+      duplicate,
+      updateMetrics(duplicate, metadata.timestamp)
+    );
+
+    await saveApi(duplicate);
+
+    emitScannerEvent("api_updated", duplicate);
+
+    return duplicate;
   }
 
-  const savedRecord = await saveApi(record);
+  await saveApi(record);
+
   await incrementDetectedCount();
-  emitScannerEvent("api_saved", savedRecord);
-  return savedRecord;
+
+  emitScannerEvent("api_saved", record);
+
+  return record;
 }
