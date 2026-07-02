@@ -237,6 +237,33 @@ button:hover {
   color: var(--muted);
 }
 
+.badge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(79, 70, 229, 0.18);
+  color: #c7d2fe;
+  border: 1px solid rgba(79, 70, 229, 0.24);
+}
+
+.badge.product-api,
+.badge.search-api,
+.badge.cart-api,
+.badge.offer-api,
+.badge.auth-api,
+.badge.user-api,
+.badge.order-api,
+.badge.payment-api,
+.badge.inventory-api,
+.badge.review-api,
+.badge.graphql-api,
+.badge.static-asset {
+  background: rgba(79, 70, 229, 0.18);
+  color: #c7d2fe;
+  border-color: rgba(79, 70, 229, 0.24);
+}
+
 .api-card__host,
 .api-card__path {
   margin: 0;

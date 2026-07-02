@@ -8,11 +8,13 @@ export function createApiCard(api) {
 
   const method = api.method || "GET";
   const timestamp = api.savedAt ? new Date(api.savedAt).toLocaleString() : "Unknown";
+  const apiType = api.apiType || "Unknown API";
+  const badgeClass = apiType.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
   card.innerHTML = `
     <div class="api-card__header">
       <span class="api-card__method">${method}</span>
-      <span class="api-card__type">${api.apiType || "Unknown API"}</span>
+      <span class="api-card__type badge ${badgeClass}">${apiType}</span>
     </div>
     <div class="api-card__body">
       <p class="api-card__host">${api.hostname || "Unknown host"}</p>
