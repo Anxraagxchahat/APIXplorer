@@ -2,8 +2,9 @@
  * Render a single saved API record as a rich card.
  */
 
-export function createApiCard(api) {
+export function createApiCard(api, onSelect) {
   const card = document.createElement("article");
+
   card.className = "api-card";
 
   const method = api.method || "GET";
@@ -15,14 +16,6 @@ export function createApiCard(api) {
 
   const confidence = api.confidence ?? "--";
   const calls = api.calls ?? 1;
-
-  const firstSeen = api.firstSeen
-    ? new Date(api.firstSeen).toLocaleTimeString()
-    : "--";
-
-  const lastSeen = api.lastSeen
-    ? new Date(api.lastSeen).toLocaleTimeString()
-    : "--";
 
   card.innerHTML = `
     <div class="api-card__header">
@@ -40,11 +33,11 @@ export function createApiCard(api) {
     <div class="api-card__body">
 
       <div class="api-card__host">
-        ${api.hostname || "Unknown Host"}
+        ${api.hostname}
       </div>
 
       <div class="api-card__path">
-        ${api.pathname || "/"}
+        ${api.pathname}
       </div>
 
     </div>
@@ -53,46 +46,16 @@ export function createApiCard(api) {
 
       <span>🎯 ${confidence}%</span>
 
-      <span>📡 ${calls} calls</span>
-
-    </div>
-
-    <div class="api-card__time">
-
-      <span>First: ${firstSeen}</span>
-
-      <span>Last: ${lastSeen}</span>
-
-    </div>
-
-    <div class="api-card__actions">
-
-      <button class="copy-url">
-        Copy URL
-      </button>
-
-      <button class="copy-curl">
-        Copy cURL
-      </button>
+      <span>📡 ${calls}</span>
 
     </div>
   `;
 
-  card
-    .querySelector(".copy-url")
-    ?.addEventListener("click", () => {
-      navigator.clipboard.writeText(api.url);
-    });
-
-  card
-    .querySelector(".copy-curl")
-    ?.addEventListener("click", () => {
-
-      const curl =
-`curl -X ${method} "${api.url}"`;
-
-      navigator.clipboard.writeText(curl);
-    });
+  card.addEventListener("click", () => {
+    if (typeof onSelect === "function") {
+      onSelect(api);
+    }
+  });
 
   return card;
 }

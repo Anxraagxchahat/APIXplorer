@@ -2,6 +2,7 @@
  * Render and manage the saved API list dashboard.
  */
 
+import { createApiDetails } from "./api-details.js";
 import { clearApis, getApis } from "../../core/storage.js";
 import { createApiCard } from "./api-card.js";
 import { createFilters } from "./filters.js";
@@ -21,6 +22,9 @@ export async function renderApiDashboard(container, { onRefresh }) {
 
   const listWrapper = document.createElement("div");
   listWrapper.className = "api-list";
+
+  const detailsWrapper = document.createElement("div");
+  detailsWrapper.className = "api-details-panel";
 
   const emptyState = document.createElement("div");
   emptyState.className = "empty-state";
@@ -46,10 +50,14 @@ export async function renderApiDashboard(container, { onRefresh }) {
       return;
     }
 
-    filtered.forEach((api) => {
-      listWrapper.appendChild(createApiCard(api));
-    });
-  };
+ filtered.forEach((api) => {
+  const card = createApiCard(api, (selectedApi) => {
+    detailsWrapper.innerHTML = "";
+    detailsWrapper.appendChild(createApiDetails(selectedApi));
+  });
+
+  listWrapper.appendChild(card);
+});
 
   const { controls } = createFilters({
     onFilterChange: (nextFilter) => {
@@ -79,6 +87,9 @@ export async function renderApiDashboard(container, { onRefresh }) {
     },
   });
 
-  container.append(header, controls, listWrapper);
-  await renderList();
-}
+  container.append(
+  header,
+  controls,
+  listWrapper,
+  detailsWrapper
+);
