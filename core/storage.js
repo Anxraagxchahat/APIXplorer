@@ -1,43 +1,77 @@
 /**
- * Storage helpers for persisted API data.
- *
- * The module wraps chrome.storage.local with simple async helpers for saving,
- * loading, and clearing discovered API entries.
+ * APIXplorer Storage Layer
  */
 
 const STORAGE_KEY = "apixplorer.apis";
 
-/**
- * Persist a discovered API entry.
- * @param {Object} api - The API record to save.
- * @returns {Promise<Object>} The saved API entry.
- */
-export async function saveApi(api) {
-  const payload = {
-    ...api,
-    savedAt: Date.now(),
-  };
-
-  const existingApis = await getApis();
-  const nextApis = [...existingApis, payload];
-
-  await chrome.storage.local.set({ [STORAGE_KEY]: nextApis });
-  return payload;
-}
-
-/**
- * Load all saved API entries.
- * @returns {Promise<Array>} The stored API records.
- */
 export async function getApis() {
   const result = await chrome.storage.local.get(STORAGE_KEY);
-  return Array.isArray(result[STORAGE_KEY]) ? result[STORAGE_KEY] : [];
+
+  return Array.isArray(result[STORAGE_KEY])
+    ? result[STORAGE_KEY]
+    : [];
 }
 
-/**
- * Remove all saved API entries.
- * @returns {Promise<void>}
- */
+export async function saveApi(api) {
+  const apis = await getApis();
+
+  const index = apis.findIndex((item) => item.id === api.id);
+
+  if (index >= 0) {
+    apis[index] = {
+      ...apis[index],
+      ...api,
+      updatedAt: Date.now(),
+    };
+  } else {
+    apis.push({
+      ...api,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+  }
+
+  await chrome.storage.local.set({
+    [STORAGE_KEY]: apis,
+  });
+
+  return api;
+}
+
+export async function removeApi(id) {
+  const apis = await getApis();
+
+  const filtered = apis.filter(
+    (item) => item.id !== id
+  );
+
+  await chrome.storage.local.set({
+    [STORAGE_KEY]: filtered,
+  });
+}
+
 export async function clearApis() {
   await chrome.storage.local.remove(STORAGE_KEY);
+}
+
+export async function getApiById(id) {
+  const apis = await getApis();
+
+  return apis.find((item) => item.id === id) || null;
+}
+
+export async function getApisByHost(hostname) {
+  const apis = await getApis();
+
+  return apis.filter(
+    (item) => item.hostname === hostname
+  );
+}
+
+export async function getApisByType(type) {
+  const apis = await getApis();
+
+  return apis.filter(
+    (item) => item.apiType === type
+  );
 }
